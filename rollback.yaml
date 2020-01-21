@@ -1,0 +1,73 @@
+Lab : Scale, Rollout and Rollback
+Scaling a deployment
+To scale a deployment in Kubernetes:
+
+kubectl scale deployment/vote --replicas=12
+ 
+kubectl rollout status deployment/vote
+ 
+Sample output:
+
+Waiting for rollout to finish: 5 of 12 updated replicas are available...
+Waiting for rollout to finish: 6 of 12 updated replicas are available...
+deployment "vote" successfully rolled out
+You could also update the deployment by editing it.
+
+kubectl edit deploy/vote
+[change replicas to 15 from the editor, save and observe]
+
+Rolling Updates in Action
+Now, update the deployment spec to apply
+
+file: vote-deploy.yaml
+
+spec:
+...
+  replicas: 15
+...
+labels:
+   app: python
+   role: vote
+   version: v3
+...
+template:   
+  spec:
+    containers:
+      - name: app
+        image: schoolofdevops/vote:v3
+ 
+apply
+
+kubectl apply -f vote-deploy.yaml
+ 
+kubectl rollout status deployment/vote
+Observe rollout status and monitoring screen.
+
+kubectl rollout history deploy/vote
+ 
+kubectl rollout history deploy/vote --revision=1
+ 
+Undo and Rollback
+file: vote-deploy.yaml
+
+spec:
+  containers:
+    - name: app
+      image: schoolofdevops/vote:rgjerdf
+ 
+apply
+
+kubectl apply -f vote-deploy.yaml
+ 
+kubectl rollout status
+ 
+kubectl rollout history deploy/vote
+ 
+kubectl rollout history deploy/vote --revision=xx
+where replace xxx with revisions
+
+Find out the previous revision with sane configs.
+
+To undo to a sane version (for example revision 3)
+
+kubectl rollout undo deploy/vote --to-revision=3
