@@ -1,0 +1,88 @@
+LAB: Creating a Service and exposing it with NodePort
+Exposing Application with a Service
+
+Types of Services:
+
+ClusterIP
+
+NodePort
+
+LoadBalancer
+
+ExternalName
+
+kubernetes service
+
+kubectl get pods
+kubectl get svc
+Sample Output:
+
+NAME                READY     STATUS    RESTARTS   AGE
+voting-appp-j52x   1/1       Running   0          2m
+voting-appp-pr2xz   1/1       Running   0          m
+voting-appp-qpxbm   1/1       Running   0          5m
+Setting up monitoring
+If you are not running a monitoring screen, start it in a new terminal with the following command.
+
+watch -n 1 kubectl get  pod,deploy,rs,svc
+Writing Service Spec
+Lets start writing the meta information for service.
+
+Filename: vote-svc.yaml
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vote
+  labels:
+    role: vote
+spec:
+And then add the spec to it. Refer to Service (v1 core) api at this page https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.10/
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vote
+  labels:
+    role: vote
+spec:
+  selector:
+    role: vote
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 30000
+  type: NodePort
+ 
+Save the file.
+
+Now to create a service:
+
+kubectl apply -f vote-svc.yaml --dry-run
+kubectl apply -f vote-svc.yaml
+kubectl get svc
+Now to check which port the pod is connected
+
+kubectl describe service vote
+Check for the Nodeport here
+
+Sample Output
+
+Name:                     vote
+Namespace:                instavote
+Labels:                   role=svc
+                          tier=front
+Annotations:              kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"labels":{"role":"svc","tier":"front"},"name":"vote","namespace":"instavote"},"spec":{...
+Selector:                 app=vote
+Type:                     NodePort
+IP:                       10.108.108.157
+Port:                     <unset>  80/TCP
+TargetPort:               80/TCP
+NodePort:                 <unset>  31429/TCP
+Endpoints:                10.38.0.4:80,10.38.0.5:80,10.38.0.6:80 + 2 more...
+Session Affinity:         None
+External Traffic Policy:  Cluster
+Events:                   <none>
+Go to browser and check hostip:NodePort
